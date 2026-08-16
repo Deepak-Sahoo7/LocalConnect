@@ -2,7 +2,7 @@ import "./App.css";
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://localconnect-bcar.onrender.com");
 
 function App() {
   const services = [
@@ -156,7 +156,7 @@ const filteredProviders = providers.filter((provider) => {
   }
 
   try {
-    const response = await fetch("http://localhost:5000/book", {
+   const response = await fetch("https://localconnect-bcar.onrender.com/book", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -228,7 +228,7 @@ const filteredProviders = providers.filter((provider) => {
                 onClick={async () => {
                   try {
                     const response = await fetch(
-                      `http://localhost:5000/bookings/${encodeURIComponent(loggedInName)}`
+                      `https://localconnect-bcar.onrender.com/bookings/${encodeURIComponent(loggedInName)}`
                     );
                     const data = await response.json();
                     if (response.ok) {
@@ -349,7 +349,7 @@ const filteredProviders = providers.filter((provider) => {
 
                 try {
                   const response = await fetch(
-                    `http://localhost:5000/bookings/${booking._id}`,
+                    `https://localconnect-bcar.onrender.com/bookings/${booking._id}`,
                     {
                       method: "DELETE",
                     }
@@ -454,7 +454,7 @@ const filteredProviders = providers.filter((provider) => {
                 try {
 
                   const response = await fetch(
-                    "http://localhost:5000/login",
+                    "https://localconnect-bcar.onrender.com/login",
                     {
                       method: "POST",
 
@@ -596,7 +596,7 @@ const filteredProviders = providers.filter((provider) => {
                 try {
 
                   const response = await fetch(
-                    "http://localhost:5000/register",
+                    "https://localconnect-bcar.onrender.com/register",
                     {
                       method: "POST",
 
