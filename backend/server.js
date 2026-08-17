@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const { MongoClient, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
@@ -6,12 +7,30 @@ const http = require("http");
 const { Server } = require("socket.io");
 const twilio = require("twilio");
 
+const app = express();
+
+// Render PORT + local PORT
+const PORT = process.env.PORT || 5000;
+
+// =========================
+// MONGODB
+// =========================
+
 const uri = process.env.MONGO_URI;
 
-const client = new MongoClient(uri);
+if (!uri) {
+  console.error("ERROR: MONGO_URI is not set!");
+  process.exit(1);
+}
 
-const app = express();
-const PORT = 5000;
+const client = new MongoClient(uri, {
+  serverSelectionTimeoutMS: 10000,
+});
+
+// =========================
+// TWILIO
+// =========================
+
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
@@ -31,6 +50,13 @@ const io = new Server(server, {
 });
 
 // =========================
+// MIDDLEWARE
+// =========================
+
+app.use(cors());
+app.use(express.json());
+
+// =========================
 // SOCKET CONNECTION
 // =========================
 
@@ -43,26 +69,22 @@ io.on("connection", (socket) => {
 });
 
 // =========================
-// MIDDLEWARE
-// =========================
-
-app.use(cors());
-app.use(express.json());
-
-// =========================
-// MONGODB CONNECTION
+// DATABASE CONNECTION
 // =========================
 
 async function connectDB() {
   try {
     await client.connect();
+
+    // Test database connection
+    await client.db("LocalConnect").command({ ping: 1 });
+
     console.log("MongoDB Connected Successfully!");
   } catch (error) {
     console.error("MongoDB Connection Failed:", error);
+    process.exit(1);
   }
 }
-
-connectDB();
 
 // =========================
 // HOME
@@ -184,40 +206,45 @@ app.post("/book", async (req, res) => {
     const bookings = db.collection("bookings");
 
     const result = await bookings.insertOne({
-      name: name,
-      provider: provider,
-      date: date,
-      time: time,
+      name,
+      provider,
+      date,
+      time,
       status: "confirmed",
       createdAt: new Date(),
     });
-    // Send SMS using Twilio
-await twilioClient.messages.create({
-  body: "sms_appointment_reminders",
-  from: process.env.TWILIO_PHONE_NUMBER,
-  to: "+916371579908"
-});
+
     console.log("Booking Saved Successfully!");
     console.log("Booking ID:", result.insertedId);
-    console.log("Name:", name);
-    console.log("Provider:", provider);
-    console.log("Date:", date);
-    console.log("Time:", time);
 
     // =========================
-    // SOCKET.IO BOOKING EVENT
+    // TWILIO SMS
+    // =========================
+
+    try {
+      await twilioClient.messages.create({
+        body: `LocalConnect booking confirmed for ${date} at ${time}.`,
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: process.env.TWILIO_TO_PHONE_NUMBER,
+      });
+
+      console.log("SMS sent successfully!");
+    } catch (smsError) {
+      console.error("SMS Error:", smsError);
+    }
+
+    // =========================
+    // SOCKET.IO
     // =========================
 
     io.emit("newBooking", {
       bookingId: result.insertedId.toString(),
-      name: name,
-      provider: provider,
-      date: date,
-      time: time,
+      name,
+      provider,
+      date,
+      time,
       status: "confirmed",
     });
-
-    console.log("Real-time booking notification sent!");
 
     res.json({
       message: "Booking confirmed successfully!",
@@ -268,7 +295,7 @@ app.get("/bookings/:name", async (req, res) => {
     const bookings = db.collection("bookings");
 
     const userBookings = await bookings
-      .find({ name: name })
+      .find({ name })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -289,6 +316,12 @@ app.get("/bookings/:name", async (req, res) => {
 app.delete("/bookings/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid booking ID",
+      });
+    }
 
     const db = client.db("LocalConnect");
     const bookings = db.collection("bookings");
@@ -313,10 +346,6 @@ app.delete("/bookings/:id", async (req, res) => {
 
     console.log("Booking Cancelled:", id);
 
-    // =========================
-    // SOCKET.IO CANCEL EVENT
-    // =========================
-
     io.emit("bookingCancelled", {
       bookingId: id,
       status: "Cancelled",
@@ -338,7 +367,18 @@ app.delete("/bookings/:id", async (req, res) => {
 // START SERVER
 // =========================
 
-server.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-  console.log("Socket.IO is running!");
-});
+async function startServer() {
+  try {
+    await connectDB();
+
+    server.listen(PORT, () => {
+      console.log(`Backend running on port ${PORT}`);
+      console.log("Socket.IO is running!");
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
