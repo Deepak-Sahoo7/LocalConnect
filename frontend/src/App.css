@@ -450,7 +450,29 @@ h1 span {
   }
 
   .nav-links {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .nav-links a {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .nav-actions {
+    gap: 6px;
+  }
+
+  .location {
     display: none;
+  }
+
+  .login {
+    padding: 9px 12px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .hero {
@@ -1225,4 +1247,84 @@ footer {
 
 .booking-box button:hover {
   transform: translateY(-2px);
+}
+
+/* =========================
+   MOBILE NAVBAR - FINAL FIX
+   ========================= */
+
+@media (max-width: 700px) {
+  .navbar {
+    height: auto;
+    min-height: 70px;
+    padding: 12px 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logo {
+    font-size: 18px;
+    gap: 6px;
+  }
+
+  .logo-icon {
+    font-size: 26px;
+  }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 0 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-links a {
+    font-size: 12px;
+    padding: 5px 2px;
+    white-space: nowrap;
+  }
+
+  .nav-actions {
+    margin-left: auto;
+  }
+
+  .nav-actions > span {
+    display: none;
+  }
+
+  .login {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .navbar {
+    padding: 10px 12px;
+  }
+
+  .logo {
+    font-size: 17px;
+  }
+
+  .logo-icon {
+    font-size: 24px;
+  }
+
+  .nav-links {
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  .nav-links a {
+    font-size: 11px;
+  }
 }
