@@ -6,8 +6,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const twilio = require("twilio");
 
-const uri =
-  "mongodb+srv://localconnect:localconnect7711@cluster0.g386evd.mongodb.net/?appName=Cluster0";
+const uri = process.env.MONGO_URI;
 
 const client = new MongoClient(uri);
 
