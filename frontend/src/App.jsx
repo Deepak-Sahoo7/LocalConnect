@@ -50,6 +50,9 @@ function App() {
   const [searchLocation, setSearchLocation] = useState("");
   const [notification, setNotification] = useState("");
 
+  // Navbar popup state
+  const [activeNav, setActiveNav] = useState("");
+
   // =========================
   // SOCKET.IO REAL-TIME EVENTS
   // =========================
@@ -208,10 +211,10 @@ const filteredProviders = providers.filter((provider) => {
 
         <div className="nav-links">
           <a className="active">Home</a>
-          <a>Services</a>
-          <a>Providers</a>
-          <a>About Us</a>
-          <a>Contact</a>
+          <a onClick={() => setActiveNav("services")}>Services</a>
+          <a onClick={() => setActiveNav("providers")}>Providers</a>
+          <a onClick={() => setActiveNav("about")}>About Us</a>
+          <a onClick={() => setActiveNav("contact")}>Contact</a>
         </div>
 
         <div className="nav-actions">
@@ -269,6 +272,223 @@ const filteredProviders = providers.filter((provider) => {
         </div>
 
       </nav>
+
+
+      {/* ================= NAVBAR POPUP ================= */}
+
+      {activeNav && (
+        <div
+          onClick={() => setActiveNav("")}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.75)",
+            zIndex: 10000,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(650px, 95%)",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              background: "#071321",
+              color: "white",
+              border: "1px solid #00d9c0",
+              borderRadius: "20px",
+              padding: "30px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>
+                {activeNav === "services" && "🛠️ Our Services"}
+                {activeNav === "providers" && "👨‍🔧 Our Providers"}
+                {activeNav === "about" && "◇ About LocalConnect"}
+                {activeNav === "contact" && "📞 Contact Us"}
+              </h2>
+
+              <button
+                onClick={() => setActiveNav("")}
+                style={{
+                  background: "#ff4d4d",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "38px",
+                  height: "38px",
+                  fontSize: "22px",
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {activeNav === "services" && (
+              <div className="service-grid">
+                {services.map((service) => (
+                  <div className="service-card" key={service[1]}>
+                    <div className="service-icon">{service[0]}</div>
+                    <h3>{service[1]}</h3>
+                    <p>Starting {service[2]}</p>
+                    <span>⭐ {service[3]}</span>
+
+                    <button
+                      className="book-btn"
+                      onClick={() => {
+                        setActiveNav("");
+                        if (!isLoggedIn) {
+                          alert("Please login first to book a service.");
+                          setShowLogin(true);
+                          return;
+                        }
+                        setSelectedProvider(service[1]);
+                        setShowBooking(true);
+                      }}
+                    >
+                      Book Now
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeNav === "providers" && (
+              <div>
+                {providers.map((provider) => (
+                  <div
+                    key={provider[1]}
+                    style={{
+                      border: "1px solid #244052",
+                      borderRadius: "15px",
+                      padding: "18px",
+                      marginBottom: "15px",
+                      background: "#0b1b2a",
+                    }}
+                  >
+                    <h3 style={{ marginTop: 0 }}>
+                      {provider[0]} {provider[1]}
+                    </h3>
+                    <p>🔧 {provider[2]}</p>
+                    <p>⭐ {provider[3]} &nbsp; 📍 {provider[4]}</p>
+                    <p>📍 {provider[5]}</p>
+
+                    <button
+                      className="book-btn"
+                      onClick={() => {
+                        setActiveNav("");
+                        if (!isLoggedIn) {
+                          alert("Please login first to book a service.");
+                          setShowLogin(true);
+                          return;
+                        }
+                        setSelectedProvider(provider[1]);
+                        setShowBooking(true);
+                      }}
+                    >
+                      Book Now
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeNav === "about" && (
+              <div>
+                <p style={{ fontSize: "17px", lineHeight: "1.7" }}>
+                  <strong>LocalConnect</strong> is a smart local service
+                  marketplace that helps customers find trusted professionals
+                  near them.
+                </p>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: "15px",
+                    marginTop: "20px",
+                  }}
+                >
+                  <div className="step-card">
+                    🛡️
+                    <h3>Verified Professionals</h3>
+                    <p>Trusted service providers.</p>
+                  </div>
+
+                  <div className="step-card">
+                    ⚡
+                    <h3>Fast Service</h3>
+                    <p>Quick and reliable booking.</p>
+                  </div>
+
+                  <div className="step-card">
+                    🔒
+                    <h3>Secure Booking</h3>
+                    <p>Safe customer experience.</p>
+                  </div>
+
+                  <div className="step-card">
+                    ⭐
+                    <h3>Quality Service</h3>
+                    <p>Highly rated professionals.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeNav === "contact" && (
+              <div>
+                <div
+                  style={{
+                    background: "#0b1b2a",
+                    padding: "20px",
+                    borderRadius: "15px",
+                    marginBottom: "15px",
+                  }}
+                >
+                  <h3>📞 Phone</h3>
+                  <p>+91 XXXXX XXXXX</p>
+                </div>
+
+                <div
+                  style={{
+                    background: "#0b1b2a",
+                    padding: "20px",
+                    borderRadius: "15px",
+                    marginBottom: "15px",
+                  }}
+                >
+                  <h3>📧 Email</h3>
+                  <p>support@localconnect.com</p>
+                </div>
+
+                <div
+                  style={{
+                    background: "#0b1b2a",
+                    padding: "20px",
+                    borderRadius: "15px",
+                  }}
+                >
+                  <h3>📍 Location</h3>
+                  <p>Bhubaneswar, Odisha</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ================= MY BOOKINGS ================= */}
       {showBookings && (
